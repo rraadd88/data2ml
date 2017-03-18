@@ -1,0 +1,8 @@
+*.ipynb
+*.pyc
+*.ipynb_checkpoints
+docs
+update_forks
+data2ml.egg-info/*
+dist/*
+test/*
