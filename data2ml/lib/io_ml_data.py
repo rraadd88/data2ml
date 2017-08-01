@@ -155,22 +155,12 @@ def get_cols_del(data_feats):
 
 def keep_cols(dXy,dXy_ori,ycol,cols_keep=None):
     if cols_keep is None:
-        cols_keep=[
-         'Conservation score (inverse shannon uncertainty): gaps ignored',#'Conservation score (ConSurf)',
-         '$\\Delta\\Delta G$ per mutation',
-         '$\\Delta$(logP) per substitution',
-         'Distance from active site residue: minimum',
-         '$\\Delta$(Solubility (%)) per substitution',
-         '$\\Delta$(Polar Surface Area) per substitution',
-         'Distance from dimer interface',
-         'Temperature factor (flexibility)',
-         '$\\Delta$(Solvent Accessible Surface Area) per substitution',
-         'Residue depth']
+        cols_keep=[]
     for c in cols_keep:
         if not c in dXy:
             if c in dXy_ori:
                 dXy.loc[:,c]=dXy_ori.loc[:,c]
-    return make_dXy(dXy,ycol,unique_quantile=0,index="mutids",if_rescalecols=False)
+    return make_dXy(dXy,ycol,unique_quantile=0,if_rescalecols=False)
 
 def get_corr_feats(corr,mx=0.9):
     feats=[]
@@ -240,11 +230,12 @@ def feats_inter_sel_corr(dXy,ycol,Xcols,dXy_input,top_cols=None,range_coef=[0.9,
 def make_dXy(dXy,ycol,unique_quantile=0.25,
     index=None,
     if_rescalecols=True):
+    input_shape=dXy.shape
     if index is None:
         index=dXy.index.name
     dXy=set_index(dXy,index)
     
-    # print 'len(cols_del)=%s' % len(get_cols_del(dXy))
+    print 'len(cols_del)=%s' % len(get_cols_del(dXy))
     dXy=dXy.drop(get_cols_del(dXy),axis=1)
     Xcols=[c for c in dXy.columns.tolist() if c!=ycol]
     Xunique=pd.DataFrame({'unique':[len(np.unique(dXy[c])) for c in Xcols]},index=[c for c in Xcols])
@@ -254,6 +245,8 @@ def make_dXy(dXy,ycol,unique_quantile=0.25,
     if if_rescalecols:
         Xcols=[c for c in dXy.columns.tolist() if c!=ycol]
         dXy.loc[:,Xcols]=rescalecols(dXy.loc[:,Xcols])
+
+    logging.info('dXy.shape: input=(%s,%s); output=(%s,%s)' % (input_shape[0],input_shape[1],dXy.shape[0],dXy.shape[1])) 
     return dXy,Xcols,ycol
 
 # from boruta import BorutaPy

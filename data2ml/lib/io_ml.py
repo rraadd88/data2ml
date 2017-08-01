@@ -348,7 +348,10 @@ def dXy2ml(dXy,ycol,params=None,
            use_top=None,
            out_fh=None,
           regORcls='reg',
-           force=False,cores=8):
+          dXymin=100,
+           force=False,cores=8,
+           range_coef=[0.9,0.8,0.7]
+           ):
     if out_fh is None:
         out_fh='%s_%s.pkl' % ('dXy2ml',get_time())
 
@@ -356,11 +359,15 @@ def dXy2ml(dXy,ycol,params=None,
         try:
             dpkl=read_pkl(out_fh)
         except:
+            logging.info('already processed')
             return False
     else:
         dpkl={}
 
     if not ('dXy_final' in dpkl.keys()) or force:
+        logging.info('making dXy_final')
+        logging.info('dXy.shape (%s,%s)' % (dXy.shape[0],dXy.shape[1])) 
+
         dpkl['dXy_input']=dXy
         dpkl['ycol']=ycol
         dXy_input=dXy.copy()
@@ -368,12 +375,14 @@ def dXy2ml(dXy,ycol,params=None,
         dXy,Xcols,ycol=make_dXy(dXy,ycol=ycol,
             if_rescalecols=True,
             unique_quantile=0.25)
-        if len(dXy)<100:
+        if len(dXy)<dXymin:
+            logging.error('dXy.shape (%s,%s) is too less data; change dXymin (%s) to proceed' % (dXy.shape[0],dXy.shape[1],dXymin)) 
             return False
         dpkl['dXy_preprocessed']=dXy
         to_pkl(dpkl,out_fh) #back
 
-        dXy,Xcols,ycol=feats_sel_corr(dXy,ycol,range_coef=[0.9,0.8,0.7])
+        dXy,Xcols,ycol=feats_sel_corr(dXy,ycol,range_coef=range_coef)
+
         dpkl['dXy_feats_sel_corr']=dXy
         to_pkl(dpkl,out_fh) #back
 
@@ -383,13 +392,9 @@ def dXy2ml(dXy,ycol,params=None,
 
         if inter=='pre':
             dXy,Xcols,ycol=feats_inter_sel_corr(dXy,ycol,Xcols,dpkl['dXy_feats_indi'].copy(),
-                                                top_cols=[
-         'Conservation score (inverse shannon uncertainty): gaps ignored',#'Conservation score (ConSurf)',
-         'Distance from active site residue: minimum',
-         'Distance from dimer interface',
-         'Temperature factor (flexibility)',
-         'Residue depth'])
-        
+                                                range_coef=range_coef,
+                                                top_cols=[])
+
         dpkl['dXy_feats_inter_sel_corr']=dXy
         dpkl['dXy_final']=dXy
     else:
@@ -399,6 +404,7 @@ def dXy2ml(dXy,ycol,params=None,
 
     to_pkl(dpkl,out_fh) #back
 
+    logging.info('running ml')
     Xcols=[c for c in dXy.columns.tolist() if c!=ycol]
     X=dXy.loc[:,Xcols].as_matrix()
     y=dXy.loc[:,ycol].as_matrix()
@@ -410,7 +416,7 @@ def dXy2ml(dXy,ycol,params=None,
         est_method='GBC'
 
     if (if_gridsearch) or (params is None):
-        if not ('gs_cv' in dpkl.keys()) or force:
+        if (not 'gs_cv' in dpkl.keys()) or force:
             param_grid = {'learning_rate':[0.005,0.001,0.0001],#[0.1,0.01,0.005],# tuned with n estimators
                           'n_estimators':[1500,2000,3000,5000], # tuned with learning rate
                           'min_samples_leaf':[50,125], # lower -> less overfitting
@@ -428,12 +434,18 @@ def dXy2ml(dXy,ycol,params=None,
                 est_method='GBC'
                 est = GradientBoostingClassifier(random_state=88)
             logging.info('running grid search')
+            logging.info('dXy.shape (%s,%s)' % (np.shape(X),np.shape(y))) 
             gs_cv = GridSearchCV(est, param_grid, n_jobs=cores,cv=10).fit(X, y)
             print [gs_cv.best_params_,gs_cv.best_score_]
             params=gs_cv.best_params_
             dpkl['gs_cv']=gs_cv
             to_pkl(dpkl,out_fh) #back
             dpkl['params']=params
+        else:
+            logging.error('not processing gs_cv')
+    else:
+        logging.error('no gs_cv')
+
     
     if 'params' in dpkl.keys() and not force:
         params= dpkl['params']

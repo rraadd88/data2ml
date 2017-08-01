@@ -275,7 +275,7 @@ def get_RF_classi_metrics(data_classi_fh,data_dh='data_ml/',plot_dh='plots/'):
     data_out_fh="%s_%s_.csv" % (data_classi_fh,plot_type)
     get_RF_cr(y_test,y_pred,classes,data_out_fh=data_out_fh)
 
-def get_GB_cls_metrics(data_fh,info):
+def get_GB_cls_metrics(data_fh,cores=2,out_dh=None):
     from pylab import figtext
     try:
         dpkl=read_pkl(data_fh)
@@ -283,6 +283,8 @@ def get_GB_cls_metrics(data_fh,info):
         return False
     if not 'gs_cv' in dpkl.keys():
         return False
+    if out_dh is None:
+       out_dh=dirname(data_fh) 
     dXy=dpkl['dXy_final']
     ycol=dpkl['ycol']
     gs_cv=dpkl['gs_cv']
@@ -295,7 +297,7 @@ def get_GB_cls_metrics(data_fh,info):
 
     #partial dep 
     plot_type='partial_dep'
-    plot_fh='%s/data_ml/%s.%s.pdf' % (info.prj_dh,plot_type,basename(data_fh))
+    plot_fh='%s/data_ml/%s.%s.pdf' % (out_dh,plot_type,basename(data_fh))
     logging.info('ml plots' % plot_fh)
     if not exists(plot_fh):
         feats_indi=[s for s in dpkl['feat_imp'].head(6).index.tolist() if not ((') ' in s) and (' (' in s))]
@@ -304,7 +306,7 @@ def get_GB_cls_metrics(data_fh,info):
         from sklearn.ensemble.partial_dependence import plot_partial_dependence
         fig, axs = plot_partial_dependence(est, X, features,#[[features[1],features[2]]],
                                            feature_names=feature_names,
-                                           n_jobs=int(info.cores), grid_resolution=50,
+                                           n_jobs=int(cores), grid_resolution=50,
                                            n_cols=2,
                                            line_kw={'color':'r'},
                                           figsize=[5,7])
@@ -313,7 +315,7 @@ def get_GB_cls_metrics(data_fh,info):
     
     #relimp
     plot_type='featimps'
-    plot_fh='%s/data_ml/%s.%s.pdf' % (info.prj_dh,plot_type,basename(data_fh))
+    plot_fh='%s/data_ml/%s.%s.pdf' % (out_dh,plot_type,basename(data_fh))
     if not exists(plot_fh):
         featst=10
         fig=plt.figure(figsize=(3,featst*0.75))
