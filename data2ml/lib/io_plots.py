@@ -12,7 +12,7 @@ plt.style.use('ggplot')
 import seaborn as sns
 import numpy as np
 
-from dms2dfe.lib.io_dfs import debad,denanrows
+from data2ml.lib.io_dfs import debad,denanrows
 # import seaborn as sns
 
 def get_rgb_colors(series,cmap='Greens',res=10):
@@ -132,7 +132,7 @@ def repel_labels(ax, x, y, labels, k=0.01,
     return ax
 
 # from scipy import stats
-from dms2dfe.lib.io_stats import get_regression_metrics
+from data2ml.lib.io_stats import get_regression_metrics
 def plot_scatter_reg(data_all,cols,
                      xlabel=None,ylabel=None,title=None,
                      color_scatter="gray",
@@ -454,7 +454,7 @@ def correlate(data_all,cols,cols_lables,linear_reg=False,median_reg=False,color=
             medians=get_medians(combo,cols_lables[0],cols_lables[1])
         elif median_reg=="y":
             medians=get_medians(combo,cols_lables[1],cols_lables[0])
-        from dms2dfe.lib.io_ml import denanrows
+        from data2ml.lib.io_ml import denanrows
         medians=denanrows(medians)
         medians=medians.astype(float)
         medians_reg_m,medians_reg_c = np.polyfit(medians[cols_lables[0]], medians[cols_lables[1]], deg=1)    

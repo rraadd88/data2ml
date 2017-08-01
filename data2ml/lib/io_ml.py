@@ -15,10 +15,10 @@ from sklearn.preprocessing import LabelEncoder,label_binarize
 from sklearn.metrics import roc_curve, auc
 from sklearn.metrics import confusion_matrix,classification_report,regression
 
-from dms2dfe.lib.io_data_files import read_pkl,to_pkl
-from dms2dfe.lib.io_dfs import set_index,denan,denanrows,del_Unnamed
-from dms2dfe.lib.io_nums import is_numeric
-from dms2dfe.lib.io_plots import saveplot,get_axlims
+from data2ml.lib.io_data_files import read_pkl,to_pkl
+from data2ml.lib.io_dfs import set_index,denan,denanrows,del_Unnamed
+from data2ml.lib.io_nums import is_numeric
+from data2ml.lib.io_plots import saveplot,get_axlims
 
 import numpy as np
 import pandas as pd
@@ -30,7 +30,7 @@ import seaborn as sns
 
 import warnings
 warnings.simplefilter(action = "ignore", category = FutureWarning)
-from dms2dfe.lib.io_strs import get_logger
+from data2ml.lib.io_strs import get_logger
 logging=get_logger()
 # logging.basicConfig(format='[%(asctime)s] %(levelname)s\tfrom %(filename)s in %(funcName)s(..):%(lineno)d: %(message)s',level=logging.DEBUG) # filename=cfg_xls_fh+'.log'
 
@@ -280,8 +280,8 @@ def data_combo2ml(data_combo,data_fn,data_dh,plot_dh,
 
 def data_regress2data_fit(prj_dh,data_fit_key,
                           data_regress_all,col='FCA_norm'):
-    # from dms2dfe.lib.io_nums import str2num
-    from dms2dfe.lib.io_mut_files import rescale_fitnessbysynonymous,class_fit,mutids_converter
+    # from data2ml.lib.io_nums import str2num
+    from data2ml.lib.io_mut_files import rescale_fitnessbysynonymous,class_fit,mutids_converter
 
     data_fit=pd.read_csv("%s/%s" % (prj_dh,data_fit_key))
     data_fit=data_fit.loc[:,["mutids",col]].set_index("mutids",drop=True)
@@ -310,11 +310,11 @@ def data_regress2data_fit(prj_dh,data_fit_key,
 
 
 #GB
-from dms2dfe.lib.io_strs import get_time
-from dms2dfe.lib.io_ml_data import feats_inter,keep_cols,feats_sel_corr,make_dXy,feats_inter_sel_corr
-# %run ../../progs/dms2dfe/dms2dfe/lib/io_ml.py
-# %run ../../progs/dms2dfe/dms2dfe/lib/io_ml_data.py
-# %run ../../1_dms_software/progs/dms2dfe/dms2dfe/lib/io_ml_metrics.py
+from data2ml.lib.io_strs import get_time
+from data2ml.lib.io_ml_data import feats_inter,keep_cols,feats_sel_corr,make_dXy,feats_inter_sel_corr
+# %run ../../progs/data2ml/data2ml/lib/io_ml.py
+# %run ../../progs/data2ml/data2ml/lib/io_ml_data.py
+# %run ../../1_dms_software/progs/data2ml/data2ml/lib/io_ml_metrics.py
 
 from sklearn.model_selection import cross_val_predict,cross_val_score
 from sklearn.ensemble import GradientBoostingClassifier, GradientBoostingRegressor
@@ -485,8 +485,8 @@ def dXy2ml(dXy,ycol,params=None,
     to_pkl(dpkl,out_fh) #back
     # return est,dXy,dpkl
 
-from dms2dfe.lib.io_ml_metrics import get_GB_cls_metrics
 
+from data2ml.lib.io_ml_metrics import get_GB_cls_metrics
 def data_fit2ml(dX_fh,dy_fh,info,regORcls='cls'):
 
     dy=pd.read_csv(dy_fh).set_index('mutids')

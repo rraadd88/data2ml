@@ -17,11 +17,11 @@ from sklearn.metrics import roc_curve, auc
 from sklearn.model_selection import GridSearchCV
 from sklearn.metrics import confusion_matrix,classification_report,regression
 
-from dms2dfe.lib.io_data_files import read_pkl,to_pkl
-from dms2dfe.lib.io_dfs import set_index,denan,denanrows,del_Unnamed
-from dms2dfe.lib.io_nums import is_numeric
-from dms2dfe.lib.io_strs import linebreaker
-from dms2dfe.lib.io_plots import saveplot,get_axlims
+from data2ml.lib.io_data_files import read_pkl,to_pkl
+from data2ml.lib.io_dfs import set_index,denan,denanrows,del_Unnamed
+from data2ml.lib.io_nums import is_numeric
+from data2ml.lib.io_strs import linebreaker
+from data2ml.lib.io_plots import saveplot,get_axlims
 
 import numpy as np
 import pandas as pd
@@ -33,7 +33,7 @@ import seaborn as sns
 
 import warnings
 warnings.simplefilter(action = "ignore", category = FutureWarning)
-from dms2dfe.lib.io_strs import get_logger
+from data2ml.lib.io_strs import get_logger
 logging=get_logger()
 # logging.basicConfig(format='[%(asctime)s] %(levelname)s\tfrom %(filename)s in %(funcName)s(..):%(lineno)d: %(message)s',level=logging.DEBUG) # filename=cfg_xls_fh+'.log'
 
@@ -130,7 +130,7 @@ def plot_importances(feature_importances,plot_fh=None,data_out_fh=None):
     return feature_importances
 
 import forestci as fci
-from dms2dfe.lib.io_stats import get_regression_metrics
+from data2ml.lib.io_stats import get_regression_metrics
 def get_RF_ci(RF_type,RF_classi,X_train,X_test,y_test,y_score,
                 classes=['yes','no'],plot_fh=None):
     # calculate inbag and unbiased variance
@@ -296,6 +296,7 @@ def get_GB_cls_metrics(data_fh,info):
     #partial dep 
     plot_type='partial_dep'
     plot_fh='%s/data_ml/%s.%s.pdf' % (info.prj_dh,plot_type,basename(data_fh))
+    logging.info('ml plots' % plot_fh)
     if not exists(plot_fh):
         feats_indi=[s for s in dpkl['feat_imp'].head(6).index.tolist() if not ((') ' in s) and (' (' in s))]
         features=[Xcols.index(f) for f in feats_indi]

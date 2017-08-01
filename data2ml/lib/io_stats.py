@@ -14,7 +14,7 @@ import logging
 from statsmodels.stats.weightstats import DescrStatsW,CompareMeans
 from statsmodels.sandbox.stats.multicomp import multipletests
 
-from dms2dfe.lib.io_dfs import debad 
+from data2ml.lib.io_dfs import debad 
 
 def testcomparison(df,smp1_cols,smp2_cols,test='ttest'):
     if len(smp1_cols)==0 or len(smp2_cols)==0:
@@ -34,7 +34,7 @@ def testcomparison(df,smp1_cols,smp2_cols,test='ttest'):
         return df
 
 from scipy import stats
-from dms2dfe.lib.io_dfs import denan
+from data2ml.lib.io_dfs import denan
 def get_r2(data,xcol,ycol,log=None):
     data=denan(data.loc[:,[xcol,ycol]],axis='rows',condi='any')
     if len(data)!=0:
@@ -65,7 +65,7 @@ def get_regression_metrics(y_test,y_score,
         result="%s\nRMSE=%0.2f" % (result,rmse)        
     return result,r,rmse
 
-from dms2dfe.lib.io_ml import denanrows
+from data2ml.lib.io_ml import denanrows
 from scipy.stats import wilcoxon
 from numpy import asarray,compress
 def get_wilcoxon_direction(data,col_x,col_y):

@@ -7,9 +7,9 @@ import sys
 from os.path import exists,splitext
 import argparse
 #import logging
-#from dms2dfe import configure    
+#from data2ml import configure    
 
-from dms2dfe.lib.io_strs import get_logg
+from data2ml.lib.io_strs import get_logg
 er  
 logging=get_logging()                                    
 
@@ -21,7 +21,7 @@ def main():
 
     .. code-block:: text
 
-        python path/to/dms2dfe/pipeline.py path/to/project_directory
+        python path/to/data2ml/pipeline.py path/to/project_directory
         
     :param prj_dh: path to project directory.
     
@@ -29,11 +29,11 @@ def main():
 
     Optionally, In addition to envoking `pipeline`, individual programs can be accessed separately as described in :ref:`programs` section.
     Also submodules can be accessed though an API, as described in :ref:`api` section.
-    Also the scripts can be envoked through bash from locally downloaded `dms2dfe` folder.
+    Also the scripts can be envoked through bash from locally downloaded `data2ml` folder.
 
     """
     logging.info("start")
-    parser = argparse.ArgumentParser(description='dms2dfe')
+    parser = argparse.ArgumentParser(description='data2ml')
     parser.add_argument("prj_dh", help="path to project directory", 
                         action="store", default=False)    
     parser.add_argument("--test", help="Debug mode on", dest="test", 
@@ -67,7 +67,7 @@ def pipeline(prj_dh,step=None,test=False):
         if step==None:
             logging.info("Location of output data: %s/plots/aas/data_comparison" % (prj_dh))
             logging.info("Location of output visualizations: %s/plots/aas/" % (prj_dh))
-            logging.info("For information about file formats of outputs, refer to http://kc-lab.github.io/dms2dfe .")
+            logging.info("For information about file formats of outputs, refer to http://kc-lab.github.io/data2ml .")
     else:
         configure.main(prj_dh)                  
     logging.shutdown()

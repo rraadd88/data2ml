@@ -17,10 +17,10 @@ from sklearn.metrics import roc_curve, auc
 from sklearn.model_selection import GridSearchCV
 from sklearn.metrics import confusion_matrix,classification_report,regression
 
-from dms2dfe.lib.io_data_files import read_pkl,to_pkl
-from dms2dfe.lib.io_dfs import set_index,denan,denanrows,del_Unnamed
-from dms2dfe.lib.io_nums import is_numeric
-from dms2dfe.lib.io_plots import saveplot,get_axlims
+from data2ml.lib.io_data_files import read_pkl,to_pkl
+from data2ml.lib.io_dfs import set_index,denan,denanrows,del_Unnamed
+from data2ml.lib.io_nums import is_numeric
+from data2ml.lib.io_plots import saveplot,get_axlims
 
 import numpy as np
 import pandas as pd
@@ -32,9 +32,9 @@ import seaborn as sns
 
 import warnings
 warnings.simplefilter(action = "ignore", category = FutureWarning)
-from dms2dfe.lib.io_strs import get_logger
+from data2ml.lib.io_strs import get_logger
 logging=get_logger()
-# from dms2dfe.lib.io_strs import get_time
+# from data2ml.lib.io_strs import get_time
 # logging.basicConfig(format='[%(asctime)s] %(levelname)s\tfrom %(filename)s in %(funcName)s(..):%(lineno)d: %(message)s',level=logging.DEBUG) # filename=cfg_xls_fh+'.log'
 
 def y2classes(data_combo,y_coln,classes=2,
@@ -237,8 +237,13 @@ def feats_inter_sel_corr(dXy,ycol,Xcols,dXy_input,top_cols=None,range_coef=[0.9,
     dXy,Xcols,ycol=keep_cols(dXy,dXy_input,ycol,cols_keep=dXy_input.columns.tolist())
     return dXy,Xcols,ycol
 
-def make_dXy(dXy,ycol,unique_quantile=0.25,index="mutids",if_rescalecols=True):
+def make_dXy(dXy,ycol,unique_quantile=0.25,
+    index=None,
+    if_rescalecols=True):
+    if index is None:
+        index=dXy.index.name
     dXy=set_index(dXy,index)
+    
     # print 'len(cols_del)=%s' % len(get_cols_del(dXy))
     dXy=dXy.drop(get_cols_del(dXy),axis=1)
     Xcols=[c for c in dXy.columns.tolist() if c!=ycol]

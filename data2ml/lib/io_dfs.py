@@ -11,11 +11,13 @@
 from os.path import basename,exists
 import pandas as pd
 import numpy as np
-from dms2dfe.lib.io_nums import is_numeric
-from dms2dfe.lib.io_strs import get_logger
+from data2ml.lib.io_nums import is_numeric
+from data2ml.lib.io_strs import get_logger
 logging=get_logger()
 
 def set_index(data,col_index):
+    if (col_index in data) and (data.index.name==col_index):
+        data=data.drop(col_index,axis=1)
     if col_index in data:
         data=data.reset_index().set_index(col_index)
         if 'index' in data:
@@ -23,6 +25,8 @@ def set_index(data,col_index):
         return data
     elif data.index.name==col_index:
         return data
+    elif col_index is None:
+        logging.error('index col name is none')
 
 # dfs
 def concat_cols(df1,df2,idx_col,df1_cols,df2_cols,

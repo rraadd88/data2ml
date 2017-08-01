@@ -9,7 +9,7 @@
 setup.py
 ========
 
-installs dms2dfe
+installs data2ml
 
 USAGE :
 python setup.py install
