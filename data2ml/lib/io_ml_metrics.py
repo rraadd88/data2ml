@@ -284,7 +284,7 @@ def get_GB_cls_metrics(data_fh,cores=2,out_dh=None):
     if not 'gs_cv' in dpkl.keys():
         return False
     if out_dh is None:
-       out_dh=dirname(data_fh) 
+        out_dh=dirname(data_fh)
     dXy=dpkl['dXy_final']
     ycol=dpkl['ycol']
     gs_cv=dpkl['gs_cv']
@@ -297,8 +297,8 @@ def get_GB_cls_metrics(data_fh,cores=2,out_dh=None):
 
     #partial dep 
     plot_type='partial_dep'
-    plot_fh='%s/data_ml/%s.%s.pdf' % (out_dh,plot_type,basename(data_fh))
-    logging.info('ml plots' % plot_fh)
+    plot_fh='%s.%s.pdf' % (basename(data_fh),plot_type)
+    logging.info('ml plots: %s' % plot_fh)
     if not exists(plot_fh):
         feats_indi=[s for s in dpkl['feat_imp'].head(6).index.tolist() if not ((') ' in s) and (' (' in s))]
         features=[Xcols.index(f) for f in feats_indi]
@@ -315,7 +315,7 @@ def get_GB_cls_metrics(data_fh,cores=2,out_dh=None):
     
     #relimp
     plot_type='featimps'
-    plot_fh='%s/data_ml/%s.%s.pdf' % (out_dh,plot_type,basename(data_fh))
+    plot_fh='%s.%s.pdf' % (basename(data_fh),plot_type)
     if not exists(plot_fh):
         featst=10
         fig=plt.figure(figsize=(3,featst*0.75))

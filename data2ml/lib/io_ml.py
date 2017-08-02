@@ -331,26 +331,26 @@ def run_est(est,X,y,params,cv=True):
         print [r2s,np.mean(r2s)] 
     return r2s,est
 def est2feats_imp(est,Xcols,Xy=None):
-    try:
-        feat_imp = pd.DataFrame(est.feature_importances_, Xcols)#.sort_values(ascending=False)
-    except:
+    if not Xy is None:
         est.fit(Xy[0],Xy[1])
-        feat_imp = pd.DataFrame(est.feature_importances_, Xcols)#.sort_values(ascending=False)
+    feat_imp = pd.DataFrame(est.feature_importances_, Xcols)#.sort_values(ascending=False)
     feat_imp.columns=['Feature importance']
     feat_imp=feat_imp.sort_values(by='Feature importance',ascending=False)
+    if feat_imp['Feature importance'].sum()==0:
+        logging.error("feat_imp['Feature importance'].sum()==0")
     return feat_imp
 
 def dXy2ml(dXy,ycol,params=None,
-            if_gridsearch=False,
-            if_partial_dependence=False,
-           if_feats_imps=False,
-           inter=None,
-           use_top=None,
-           out_fh=None,
-          regORcls='reg',
-          dXymin=100,
-           force=False,cores=8,
-           range_coef=[0.9,0.8,0.7]
+        if_gridsearch=False,
+        if_partial_dependence=False,
+        if_feats_imps=False,
+        inter=None,
+        use_top=None,
+        out_fh=None,
+        regORcls='reg',
+        dXymin=100,
+        force=False,cores=8,
+        range_coef=[0.9,0.8,0.7]
            ):
     if out_fh is None:
         out_fh='%s_%s.pkl' % ('dXy2ml',get_time())
@@ -445,11 +445,10 @@ def dXy2ml(dXy,ycol,params=None,
             logging.error('not processing gs_cv')
     else:
         logging.error('no gs_cv')
-
     
     if 'params' in dpkl.keys() and not force:
         params= dpkl['params']
-    elif params is None:
+    else:
         dpkl['params']=params
         
     if not ('est_all_feats_r2s' in dpkl.keys()) or force:
@@ -461,7 +460,7 @@ def dXy2ml(dXy,ycol,params=None,
         if if_gridsearch:
             feat_imp=est2feats_imp(dpkl['gs_cv'].best_estimator_,Xcols,Xy=None)
         else:
-            feat_imp=est2feats_imp(est,Xcols,Xy=[X,y])
+            feat_imp=est2feats_imp(dpkl['est_all_feats'],Xcols,Xy=[X,y])
         dpkl['feat_imp']=feat_imp
         to_pkl(dpkl,out_fh) #back
 
