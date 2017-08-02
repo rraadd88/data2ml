@@ -329,6 +329,8 @@ def run_est(est,X,y,params,cv=True):
     if cv:
         r2s=cross_val_score(est,X,y,cv=10)
         print [r2s,np.mean(r2s)] 
+    else:
+        r2s=None
     return r2s,est
 def est2feats_imp(est,Xcols,Xy=None):
     if not Xy is None:
@@ -461,6 +463,17 @@ def dXy2ml(dXy,ycol,params=None,
             feat_imp=est2feats_imp(dpkl['gs_cv'].best_estimator_,Xcols,Xy=None)
         else:
             feat_imp=est2feats_imp(dpkl['est_all_feats'],Xcols,Xy=[X,y])
+        if feat_imp['Feature importance'].sum()==0:
+            logging.warning("getting 'Feature importance' using no params; bcz of small data(?)")
+            _,est=run_est('GBC',None,None,
+                            params={},
+                            cv=False)                    
+            Xcols=[c for c in dpkl['dXy_final'] if c!=dpkl['ycol']]
+            feat_imp=est2feats_imp(est=est,
+                          Xcols=Xcols,
+                          Xy=[X,y]
+                         )
+
         dpkl['feat_imp']=feat_imp
         to_pkl(dpkl,out_fh) #back
 
