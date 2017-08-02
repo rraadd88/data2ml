@@ -65,7 +65,7 @@ def get_regression_metrics(y_test,y_score,
         result="%s\nRMSE=%0.2f" % (result,rmse)        
     return result,r,rmse
 
-from data2ml.lib.io_ml import denanrows
+from data2ml.lib.io_dfs import denanrows
 from scipy.stats import wilcoxon
 from numpy import asarray,compress
 def get_wilcoxon_direction(data,col_x,col_y):

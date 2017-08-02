@@ -275,7 +275,7 @@ def get_RF_classi_metrics(data_classi_fh,data_dh='data_ml/',plot_dh='plots/'):
     data_out_fh="%s_%s_.csv" % (data_classi_fh,plot_type)
     get_RF_cr(y_test,y_pred,classes,data_out_fh=data_out_fh)
 
-def get_GB_cls_metrics(data_fh,cores=2,out_dh=None):
+def get_GB_cls_metrics(data_fh,cores=2,out_dh=None,force=False):
     from pylab import figtext
     try:
         dpkl=read_pkl(data_fh)
@@ -299,7 +299,7 @@ def get_GB_cls_metrics(data_fh,cores=2,out_dh=None):
     plot_type='partial_dep'
     plot_fh='%s.%s.pdf' % (basename(data_fh),plot_type)
     logging.info('ml plots: %s' % plot_fh)
-    if not exists(plot_fh):
+    if (not exists(plot_fh)) or force:
         feats_indi=[s for s in dpkl['feat_imp'].head(6).index.tolist() if not ((') ' in s) and (' (' in s))]
         features=[Xcols.index(f) for f in feats_indi]
         feature_names=linebreaker(Xcols)
@@ -316,7 +316,7 @@ def get_GB_cls_metrics(data_fh,cores=2,out_dh=None):
     #relimp
     plot_type='featimps'
     plot_fh='%s.%s.pdf' % (basename(data_fh),plot_type)
-    if not exists(plot_fh):
+    if (not exists(plot_fh)) or force:
         featst=10
         fig=plt.figure(figsize=(3,featst*0.75))
         # fig = plt.figure(figsize=(8,featst*0.25))#figsize=(11,5))

@@ -464,14 +464,16 @@ def dXy2ml(dXy,ycol,params=None,
         else:
             feat_imp=est2feats_imp(dpkl['est_all_feats'],Xcols,Xy=[X,y])
         if feat_imp['Feature importance'].sum()==0:
+            if_small_data=True
             logging.warning("getting 'Feature importance' using no params; bcz of small data(?)")
             _,est=run_est('GBC',None,None,
                             params={},
-                            cv=False)                    
+                            cv=False)     
+            dpkl['est_all_feats']=est
             Xcols=[c for c in dpkl['dXy_final'] if c!=dpkl['ycol']]
             feat_imp=est2feats_imp(est=est,
                           Xcols=Xcols,
-                          Xy=[X,y]
+                          Xy=[dpkl['X_final'],dpkl['y_final']]
                          )
 
         dpkl['feat_imp']=feat_imp
@@ -502,45 +504,84 @@ def dXy2ml(dXy,ycol,params=None,
     if if_partial_dependence:
         feats_indi=[s for s in Xcols if not ((') ' in s) and (' (' in s))]
         features=[Xcols.index(f) for f in feats_indi]
-        fig, axs = plot_partial_dependence(est, X, features,
+        if if_small_data==True:
+            logging.warning("getting partial_dependence using no params; bcz of small data(?)")
+            _,est=run_est('GBC',None,None,
+                            params={},
+                            cv=False)
+        fig, axs = plot_partial_dependence(est, dpkl['X_final'], features,
                                            feature_names=Xcols,
                                            n_jobs=cores, grid_resolution=50,
                                           figsize=[10,30])
     to_pkl(dpkl,out_fh) #back
     # return est,dXy,dpkl
 
-
+from data2ml.lib.io_ml_data import y2classes,X_cols2numeric,X_cols2binary,rescalecols,denanrows
+from data2ml.lib.io_ml_metrics import plot_importances
 from data2ml.lib.io_ml_metrics import get_GB_cls_metrics
-def data_fit2ml(dX_fh,dy_fh,info,regORcls='cls'):
+from data2ml.lib.io_ml_metrics import get_GB_cls_metrics
+def data2ml(dX_fh=None,dy_fh=None,
+            dX=None,dy=None,
+            index=None,
+            Xcols=None,
+            ycol=None,
+            out_fh=None,
+            cores=None,
+            regORcls='cls',
+            force=False,
+           ):
+    if not dX_fh is None:
+        dX=pd.read_csv(dX_fh).set_index(index)
+    if not dy_fh is None:
+        dy=pd.read_csv(dy_fh).set_index(index)
+    if dX is None:
+        print 'dX is None'
+    if dy is None:
+        print 'dy is None'
 
-    dy=pd.read_csv(dy_fh).set_index('mutids')
-    dX=pd.read_csv(dX_fh).set_index('mutids')
-    out_fh='%s/data_ml/%s.pkl' % (info.prj_dh,basename(dy_fh))
+    if not out_fh is None:
+        out_fh='test.pkl'
     if regORcls=='reg':
-        ycol='FiA'
         dXy=pd.concat([dy.loc[:,ycol],dX],axis=1)
-        dXy.index.name='mutids'
-        params={'loss': 'ls', 'learning_rate': 0.001, 'min_samples_leaf': 50, 'n_estimators': 5000, 'subsample': 0.8, 'min_samples_split': 38, 'max_features': None, 'max_depth': 6}
+        dXy.index.name=index
+        params={'loss': 'ls', 
+        'learning_rate': 0.001, 
+        'min_samples_leaf': 50, 
+        'n_estimators': 5000, 
+        'subsample': 0.8, 
+        'min_samples_split': 38, 
+        'max_features': None, 
+        'max_depth': 6}
     elif regORcls=='cls':
-        ycol='class_fit_binary'
-        dy.loc[(dy.loc[:,'class_fit']=='enriched'),ycol]=1
-        dy.loc[(dy.loc[:,'class_fit']=='neutral'),ycol]=np.nan
-        dy.loc[(dy.loc[:,'class_fit']=='depleted'),ycol]=0
+        dy=y2classes(dy,ycol)
         dXy=pd.concat([dy.loc[:,ycol],dX],axis=1)
-        dXy.index.name='mutids'
+        dXy.index.name=index
     #     params={'loss': 'deviance', 'learning_rate': 0.0001, 'min_samples_leaf': 50, 'n_estimators': 3000, 'subsample': 0.8, 'min_samples_split': 23, 'max_features': None, 'max_depth': 6}
-        params={'loss': 'exponential', 'learning_rate': 0.001, 'min_samples_leaf': 50, 'n_estimators': 1500, 'subsample': 0.8, 'min_samples_split': 23, 'max_features': None, 'max_depth': 6}
-    dXy2ml(dXy,ycol,      
-    #         params=params,
+        params={'loss': 'deviance', 'learning_rate': 0.005, 'min_samples_leaf': 50, 'n_estimators': 1500, 'subsample': 0.8, 'min_samples_split': 2, 'max_features': None, 'max_depth': 6}
+
+        # params={'loss': 'exponential', 
+        # 'learning_rate': 0.001,
+        # 'min_samples_leaf': 50,
+        # 'n_estimators': 1500,
+        # 'subsample': 0.8,
+        # 'min_samples_split': 23,
+        # 'max_features': None,
+        # 'max_depth': 6}
+
+    logging.info('dXy.shape (%s,%s)' % (dXy.shape[0],dXy.shape[1])) 
+    dXy2ml(dXy=dXy,ycol=ycol,      
+            # params=params,
             if_gridsearch=True,
             if_partial_dependence=False,
     #        if_feats_imps=True,
             out_fh=out_fh,
             inter='pre',
-            # force=True,
+            force=force,
     #         use_top=25,
             regORcls=regORcls,
-            cores=int(info.cores))
-    
+            dXymin=40,
+            cores=int(cores),
+            range_coef=[])  
     # get metrics plots 
-    get_GB_cls_metrics(data_fh=out_fh,info=info)
+    logging.info('getting metrics')
+    get_GB_cls_metrics(data_fh=out_fh,cores=int(cores),force=force)

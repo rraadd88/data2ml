@@ -1,76 +1,65 @@
 #!usr/bin/python
 
-# Copyright 2016, Rohan Dandage <rraadd_8@hotmail.com,rohan@igib.in>
+# Copyright 2017, Rohan Dandage <rraadd_8@hotmail.com>
 # This program is distributed under General Public License v. 3.  
 
+"""
+================================
+``pipeline``
+================================
+"""
 import sys
-from os.path import exists,splitext
-import argparse
-#import logging
-#from data2ml import configure    
+from os.path import exists
+import pandas as pd
+import numpy as np
 
-from data2ml.lib.io_strs import get_logg
-er  
-logging=get_logging()                                    
+import json
 
-def main():
-    """
-    This runs all analysis steps in tandem.
+from data2ml.lib.io_ml import data2ml
+from data2ml.lib.io_strs import get_logger
+logging=get_logger()
+import warnings
+warnings.filterwarnings('ignore')
 
-    From bash command line,
+def main(cfg_fh,test=False):
+	with open(cfg_fh, 'r') as f:
+	    cfg = json.load(f)
+	dta_fh=cfg['dta_fh']
+	index=cfg['index']
+	Xcols=cfg['Xcols']
+	ycols=cfg['ycols']
+	out_fh=cfg['out_fh']
+	cores=cfg['cores']
+	regORcls=cfg['regORcls']
+	force=cfg['force']
+	if force=='True':
+		force=True
+	elif force=='False':
+		force=False
 
-    .. code-block:: text
+	dta=pd.read_csv(dta_fh,sep='\t')
+	dX=dta.loc[:,[index]+Xcols].set_index(index)
+	dy=dta.loc[:,[index]+ycols].set_index(index)
+	for c in dy:
+		dy.loc[(dy.loc[:,c]>=0),c]=1
+		dy.loc[(dy.loc[:,c]<0),c]=0
 
-        python path/to/data2ml/pipeline.py path/to/project_directory
-        
-    :param prj_dh: path to project directory.
-    
-    Outputs are created in `prj_dh` in directories such as `data_lbl` , `data_fit` , `data_comparison` etc. as described in :ref:`io`.
-
-    Optionally, In addition to envoking `pipeline`, individual programs can be accessed separately as described in :ref:`programs` section.
-    Also submodules can be accessed though an API, as described in :ref:`api` section.
-    Also the scripts can be envoked through bash from locally downloaded `data2ml` folder.
-
-    """
-    logging.info("start")
-    parser = argparse.ArgumentParser(description='data2ml')
-    parser.add_argument("prj_dh", help="path to project directory", 
-                        action="store", default=False)    
-    parser.add_argument("--test", help="Debug mode on", dest="test", 
-                        action="store", default=False)    
-    parser.add_argument("--step", help="0: configure project directory, 0.1: get molecular features, 0.2: demultiplex fastq by provided borcodes, 0.3: alignment, 1: variant calling, 2: get preferntial enrichments, 3: identify molecular determinants, 4: identify relative selection pressures, 5: make visualizations", dest="step", 
-                        type=float,action="store", choices=[0,0.1,0.2,0.3,1,2,3,4,5],default=None)  
-    args = parser.parse_args()
-    pipeline(args.prj_dh,test=args.test,step=args.step)
-
-def pipeline(prj_dh,step=None,test=False):
-    if exists(prj_dh) :
-        if step==0 or step==None:
-            configure.main(prj_dh,"deps")
-            configure.main(prj_dh)          
-#        if step==0.1 or step==None:
-#            ana0_getfeats.main(prj_dh)
-#        if step==0.2 or step==None:
-#            ana0_fastq2dplx.main(prj_dh)
-#        if step==0.3 or step==None:
-#            ana0_fastq2sbam.main(prj_dh,test)
-#        if step==1 or step==None:
-#            ana1_sam2mutmat.main(prj_dh)
-#        if step==2 or step==None:
-#            ana2_mutmat2fit.main(prj_dh,test)
-#        if step==3 or step==None:
-#            ana4_modeller.main(prj_dh,test)
-#        if step==4 or step==None:
-#            ana3_fit2comparison.main(prj_dh)
-#        if step==5 or step==None:
-#            ana4_plotter.main(prj_dh)
-        if step==None:
-            logging.info("Location of output data: %s/plots/aas/data_comparison" % (prj_dh))
-            logging.info("Location of output visualizations: %s/plots/aas/" % (prj_dh))
-            logging.info("For information about file formats of outputs, refer to http://kc-lab.github.io/data2ml .")
-    else:
-        configure.main(prj_dh)                  
-    logging.shutdown()
+	for ycol in ycols:
+	    data2ml(dX=dX,dy=dy,
+	        index=index,
+	        Xcols=Xcols,
+	        ycol=ycol,
+	        out_fh=out_fh,
+	        cores=cores,
+	        regORcls=regORcls,
+	        force=force,
+	       )
+	    if test:   
+	    	break
 
 if __name__ == '__main__':
-    main()
+    if len(sys.argv)==3:
+        test=sys.argv[2]
+    else:
+        test=False
+    main(sys.argv[1],test=test)
