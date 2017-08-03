@@ -467,14 +467,14 @@ def dXy2ml(dXy,ycol,params=None,
             if_small_data=True
             dpkl['if_small_data']=if_small_data
             logging.warning("getting 'Feature importance' using no params; bcz of small data(?)")
-            _,est=run_est('GBC',None,None,
+            _,est=run_est('GBC',dpkl['X_final'],dpkl['y_final'],
                             params={},
                             cv=False)     
             dpkl['est_all_feats']=est
             Xcols=[c for c in dpkl['dXy_final'] if c!=dpkl['ycol']]
             feat_imp=est2feats_imp(est=est,
                           Xcols=Xcols,
-                          Xy=[dpkl['X_final'],dpkl['y_final']]
+                          # Xy=[dpkl['X_final'],dpkl['y_final']]
                          )
 
         dpkl['feat_imp']=feat_imp

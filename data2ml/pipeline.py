@@ -55,13 +55,13 @@ def pipeline(cfg_fh,test=False):
     dta=pd.read_csv(dta_fh,sep='\t')
     print dta.columns
     print Xcols
-    print [c for c in Xcols if not c in dta.columns]
-    print [c for c in dta.columns if not c in Xcols]
+    # print [c for c in Xcols if not c in dta.columns]
+    # print [c for c in dta.columns if not c in Xcols]
     dX=dta.loc[:,[index]+Xcols].set_index(index)
     dy=dta.loc[:,[index]+ycols].set_index(index)
     for c in dy:
-        dy.loc[(dy.loc[:,c]>=0),c]=1
-        dy.loc[(dy.loc[:,c]<0),c]=0
+        dy.loc[(dy.loc[:,c]>=dy.loc[:,c].median()),c]=1
+        dy.loc[(dy.loc[:,c]< dy.loc[:,c].median()),c]=0
 
     for ycol in ycols:
         data2ml(dX=dX,dy=dy,
