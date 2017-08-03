@@ -38,7 +38,7 @@ logging=get_logger()
 # logging.basicConfig(format='[%(asctime)s] %(levelname)s\tfrom %(filename)s in %(funcName)s(..):%(lineno)d: %(message)s',level=logging.DEBUG) # filename=cfg_xls_fh+'.log'
 
 def y2classes(data_combo,y_coln,classes=2,
-             middle_percentile_skipped=0):
+             middle_percentile_skipped=0,ycol_new=None):
     data_combo.loc[:,'classes']=np.nan
     if classes==2:
         median=data_combo.loc[:,y_coln].median()
@@ -52,6 +52,9 @@ def y2classes(data_combo,y_coln,classes=2,
             # print lw_bound            
             data_combo.loc[data_combo.loc[:,y_coln]>up_bound,"classes"]="high"
             data_combo.loc[data_combo.loc[:,y_coln]<lw_bound,"classes"]="low"
+    if not ycol_new is None:
+        data_combo.loc[:,ycol_new]=data_combo.loc[:,'classes']
+        del data_combo['classes']
     return data_combo
 
 def X_cols2numeric(data_all,X_cols,keep_cols=[]):

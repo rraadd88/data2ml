@@ -39,19 +39,14 @@ def main():
 def pipeline(cfg_fh,test=False):    
     with open(cfg_fh, 'r') as f:
         cfg = json.load(f)
-    dta_fh=str(cfg['dta_fh'])
-    index=str(cfg['index'])
-    Xcols=[str(s) for s in cfg['Xcols']]
-    ycols=[str(s) for s in cfg['ycols']]
-    out_fh=str(cfg['out_fh'])
-    cores=int(cfg['cores'])
-    regORcls=str(cfg['regORcls'])
-    force=str(cfg['force'])
-    if force=='True':
-        force=True
-    elif force=='False':
-        force=False
+    dta_fh=cfg['dta_fh']
+    ycols=[s for s in cfg['ycols']]
+    out_fh=cfg['out_fh']
+    index=cfg['index']
+    Xcols=cfg['Xcols']
 
+    cfg_data2ml=dict([(k,cfg[k]) for k in ['index','Xcols','cores','regORcls','force']])
+    
     dta=pd.read_csv(dta_fh,sep='\t')
     print dta.columns
     print Xcols
@@ -59,19 +54,13 @@ def pipeline(cfg_fh,test=False):
     # print [c for c in dta.columns if not c in Xcols]
     dX=dta.loc[:,[index]+Xcols].set_index(index)
     dy=dta.loc[:,[index]+ycols].set_index(index)
-    for c in dy:
-        dy.loc[(dy.loc[:,c]>=dy.loc[:,c].median()),c]=1
-        dy.loc[(dy.loc[:,c]< dy.loc[:,c].median()),c]=0
+    # from data2ml.lib.io_ml_metrics import y2classes
 
     for ycol in ycols:
-        data2ml(dX=dX,dy=dy,
-            index=index,
-            Xcols=Xcols,
-            ycol=ycol,
+        # dy=y2classes(dy,ycol,middle_percentile_skipped=0)
+        data2ml(dX=dX,dy=dy,ycol=ycol,
             out_fh='%s.%s.pkl' % (out_fh,make_pathable_string(ycol)),
-            cores=cores,
-            regORcls=regORcls,
-            force=force,
+            **cfg_data2ml
            )
         if test:   
             break

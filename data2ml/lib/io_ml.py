@@ -473,9 +473,9 @@ def dXy2ml(dXy,ycol,params=None,
             dpkl['est_all_feats']=est
             Xcols=[c for c in dpkl['dXy_final'] if c!=dpkl['ycol']]
             feat_imp=est2feats_imp(est=est,
-                          Xcols=Xcols,
-                          # Xy=[dpkl['X_final'],dpkl['y_final']]
-                         )
+                        Xcols=Xcols,
+                        # Xy=[dpkl['X_final'],dpkl['y_final']]
+                        )
 
         dpkl['feat_imp']=feat_imp
         to_pkl(dpkl,out_fh) #back
@@ -506,9 +506,9 @@ def dXy2ml(dXy,ycol,params=None,
     # return est,dXy,dpkl
 
 from data2ml.lib.io_ml_data import y2classes,X_cols2numeric,X_cols2binary,rescalecols,denanrows
-from data2ml.lib.io_ml_metrics import plot_importances
+# from data2ml.lib.io_ml_metrics import plot_importances
 from data2ml.lib.io_ml_metrics import get_GB_cls_metrics
-from data2ml.lib.io_ml_metrics import get_GB_cls_metrics
+# from data2ml.lib.io_ml_metrics import get_GB_cls_metrics
 def data2ml(dX_fh=None,dy_fh=None,
             dX=None,dy=None,
             index=None,
@@ -542,10 +542,12 @@ def data2ml(dX_fh=None,dy_fh=None,
         'max_features': None, 
         'max_depth': 6}
     elif regORcls=='cls':
-        dy=y2classes(dy,ycol)
+        dy=y2classes(dy,y_coln=ycol,
+                    classes=2,middle_percentile_skipped=0,
+                    ycol_new=ycol)
         dXy=pd.concat([dy.loc[:,ycol],dX],axis=1)
         dXy.index.name=index
-    #     params={'loss': 'deviance', 'learning_rate': 0.0001, 'min_samples_leaf': 50, 'n_estimators': 3000, 'subsample': 0.8, 'min_samples_split': 23, 'max_features': None, 'max_depth': 6}
+        # params={'loss': 'deviance', 'learning_rate': 0.0001, 'min_samples_leaf': 50, 'n_estimators': 3000, 'subsample': 0.8, 'min_samples_split': 23, 'max_features': None, 'max_depth': 6}
         params={'loss': 'deviance', 'learning_rate': 0.005, 'min_samples_leaf': 50, 'n_estimators': 1500, 'subsample': 0.8, 'min_samples_split': 2, 'max_features': None, 'max_depth': 6}
 
         # params={'loss': 'exponential', 
