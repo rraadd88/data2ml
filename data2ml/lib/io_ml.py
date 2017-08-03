@@ -465,6 +465,7 @@ def dXy2ml(dXy,ycol,params=None,
             feat_imp=est2feats_imp(dpkl['est_all_feats'],Xcols,Xy=[X,y])
         if feat_imp['Feature importance'].sum()==0:
             if_small_data=True
+            dpkl['if_small_data']=if_small_data
             logging.warning("getting 'Feature importance' using no params; bcz of small data(?)")
             _,est=run_est('GBC',None,None,
                             params={},
@@ -500,19 +501,7 @@ def dXy2ml(dXy,ycol,params=None,
         dpkl['est_top_feats']=est
         dpkl['est_top_feats_r2s']=r2s
         to_pkl(dpkl,out_fh) #back
-        
-    if if_partial_dependence:
-        feats_indi=[s for s in Xcols if not ((') ' in s) and (' (' in s))]
-        features=[Xcols.index(f) for f in feats_indi]
-        if if_small_data==True:
-            logging.warning("getting partial_dependence using no params; bcz of small data(?)")
-            _,est=run_est('GBC',None,None,
-                            params={},
-                            cv=False)
-        fig, axs = plot_partial_dependence(est, dpkl['X_final'], features,
-                                           feature_names=Xcols,
-                                           n_jobs=cores, grid_resolution=50,
-                                          figsize=[10,30])
+    
     to_pkl(dpkl,out_fh) #back
     # return est,dXy,dpkl
 
@@ -539,7 +528,7 @@ def data2ml(dX_fh=None,dy_fh=None,
     if dy is None:
         print 'dy is None'
 
-    if not out_fh is None:
+    if out_fh is None:
         out_fh='test.pkl'
     if regORcls=='reg':
         dXy=pd.concat([dy.loc[:,ycol],dX],axis=1)

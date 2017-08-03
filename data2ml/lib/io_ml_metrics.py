@@ -275,6 +275,7 @@ def get_RF_classi_metrics(data_classi_fh,data_dh='data_ml/',plot_dh='plots/'):
     data_out_fh="%s_%s_.csv" % (data_classi_fh,plot_type)
     get_RF_cr(y_test,y_pred,classes,data_out_fh=data_out_fh)
 
+from data2ml.lib.io_ml import run_est
 def get_GB_cls_metrics(data_fh,cores=2,out_dh=None,force=False):
     from pylab import figtext
     try:
@@ -300,11 +301,24 @@ def get_GB_cls_metrics(data_fh,cores=2,out_dh=None,force=False):
     plot_fh='%s.%s.pdf' % (basename(data_fh),plot_type)
     logging.info('ml plots: %s' % plot_fh)
     if (not exists(plot_fh)) or force:
+
+        # feats_indi=[s for s in Xcols if not ((') ' in s) and (' (' in s))]
+        # features=[Xcols.index(f) for f in feats_indi]
+        if dpkl['if_small_data']==True:
+            logging.warning("getting partial_dependence using no params; bcz of small data(?)")
+            _,est=run_est('GBC',None,None,
+                            params={},
+                            cv=False)
+        # fig, axs = plot_partial_dependence(est, dpkl['X_final'], features,
+        #                                    feature_names=Xcols,
+        #                                    n_jobs=cores, grid_resolution=50,
+        #                                   figsize=[10,30])
+
         feats_indi=[s for s in dpkl['feat_imp'].head(6).index.tolist() if not ((') ' in s) and (' (' in s))]
         features=[Xcols.index(f) for f in feats_indi]
         feature_names=linebreaker(Xcols)
         from sklearn.ensemble.partial_dependence import plot_partial_dependence
-        fig, axs = plot_partial_dependence(est, X, features,#[[features[1],features[2]]],
+        fig, axs = plot_partial_dependence(est, dpkl['X_final'], features,#[[features[1],features[2]]],
                                            feature_names=feature_names,
                                            n_jobs=int(cores), grid_resolution=50,
                                            n_cols=2,
