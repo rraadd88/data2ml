@@ -467,14 +467,14 @@ def dXy2ml(dXy,ycol,params=None,
             if_small_data=True
             dpkl['if_small_data']=if_small_data
             logging.warning("getting 'Feature importance' using no params; bcz of small data(?)")
-            _,est=run_est('GBC',dpkl['X_final'],dpkl['y_final'],
+            _,est=run_est('GBC',None,None,#dpkl['X_final'],dpkl['y_final'],
                             params={},
                             cv=False)     
             dpkl['est_all_feats']=est
             Xcols=[c for c in dpkl['dXy_final'] if c!=dpkl['ycol']]
             feat_imp=est2feats_imp(est=est,
                         Xcols=Xcols,
-                        # Xy=[dpkl['X_final'],dpkl['y_final']]
+                        Xy=[dpkl['X_final'],dpkl['y_final']]
                         )
 
         dpkl['feat_imp']=feat_imp
@@ -530,9 +530,11 @@ def data2ml(dX_fh=None,dy_fh=None,
 
     if out_fh is None:
         out_fh='test.pkl'
+    dy=set_index(dy,index)
+    dX=set_index(dX,index)
+    dXy=pd.concat([dy.loc[:,ycol],dX.loc[:,Xcols]],axis=1)
+    dXy.index.name=index
     if regORcls=='reg':
-        dXy=pd.concat([dy.loc[:,ycol],dX],axis=1)
-        dXy.index.name=index
         params={'loss': 'ls', 
         'learning_rate': 0.001, 
         'min_samples_leaf': 50, 
@@ -542,11 +544,11 @@ def data2ml(dX_fh=None,dy_fh=None,
         'max_features': None, 
         'max_depth': 6}
     elif regORcls=='cls':
-        dy=y2classes(dy,y_coln=ycol,
+        dXy=y2classes(dXy,y_coln=ycol,
                     classes=2,middle_percentile_skipped=0,
                     ycol_new=ycol)
-        dXy=pd.concat([dy.loc[:,ycol],dX],axis=1)
-        dXy.index.name=index
+        # dXy=pd.concat([dy.loc[:,ycol],dX],axis=1)
+        # dXy.index.name=index
         # params={'loss': 'deviance', 'learning_rate': 0.0001, 'min_samples_leaf': 50, 'n_estimators': 3000, 'subsample': 0.8, 'min_samples_split': 23, 'max_features': None, 'max_depth': 6}
         params={'loss': 'deviance', 'learning_rate': 0.005, 'min_samples_leaf': 50, 'n_estimators': 1500, 'subsample': 0.8, 'min_samples_split': 2, 'max_features': None, 'max_depth': 6}
 

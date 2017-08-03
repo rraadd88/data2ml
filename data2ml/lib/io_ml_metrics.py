@@ -309,21 +309,24 @@ def get_GB_cls_metrics(data_fh,cores=2,out_dh=None,force=False):
             _,est=run_est('GBC',None,None,
                             params={},
                             cv=False)
+            est.fit(dpkl['X_final'],dpkl['y_final'])
         # fig, axs = plot_partial_dependence(est, dpkl['X_final'], features,
         #                                    feature_names=Xcols,
         #                                    n_jobs=cores, grid_resolution=50,
         #                                   figsize=[10,30])
 
-        feats_indi=[s for s in dpkl['feat_imp'].head(6).index.tolist() if not ((') ' in s) and (' (' in s))]
+        feats_indi=[s for s in dpkl['feat_imp'].sort_values(by='Feature importance',ascending=True).head(6).index.tolist() if not ((') ' in s) and (' (' in s))]
+        print feats_indi
         features=[Xcols.index(f) for f in feats_indi]
         feature_names=linebreaker(Xcols)
         from sklearn.ensemble.partial_dependence import plot_partial_dependence
+
         fig, axs = plot_partial_dependence(est, dpkl['X_final'], features,#[[features[1],features[2]]],
                                            feature_names=feature_names,
                                            n_jobs=int(cores), grid_resolution=50,
-                                           n_cols=2,
+                                           n_cols=6,
                                            line_kw={'color':'r'},
-                                          figsize=[5,7])
+                                          figsize=[18,3])
         figtext(0.9,-0.2,'AUC = %.2f' % gs_cv.best_score_,ha='right',color='b')
         saveplot(plot_fh,form='pdf',tight_layout=False)
     
