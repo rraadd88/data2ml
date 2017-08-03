@@ -40,25 +40,21 @@ def pipeline(cfg_fh,test=False):
     with open(cfg_fh, 'r') as f:
         cfg = json.load(f)
     dta_fh=cfg['dta_fh']
-    ycols=[s for s in cfg['ycols']]
     out_fh=cfg['out_fh']
     index=cfg['index']
     Xcols=cfg['Xcols']
+    ycols=cfg['ycols']
 
     cfg_data2ml=dict([(k,cfg[k]) for k in ['index','Xcols','cores','regORcls','force']])
     
-    dta=pd.read_csv(dta_fh,sep='\t')
+    dta=pd.read_csv(dta_fh,sep='\t').set_index(index)
     print dta.columns
     print Xcols
     # print [c for c in Xcols if not c in dta.columns]
     # print [c for c in dta.columns if not c in Xcols]
-    dX=dta.loc[:,[index]+Xcols].set_index(index)
-    dy=dta.loc[:,[index]+ycols].set_index(index)
-    # from data2ml.lib.io_ml_metrics import y2classes
 
     for ycol in ycols:
-        # dy=y2classes(dy,ycol,middle_percentile_skipped=0)
-        data2ml(dX=dX,dy=dy,ycol=ycol,
+        data2ml(dX=dta,dy=dta,ycol=ycol,
             out_fh='%s.%s.pkl' % (out_fh,make_pathable_string(ycol)),
             **cfg_data2ml
            )
